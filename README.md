@@ -1,16 +1,16 @@
-# Ethan Protocol — AEP-1
+# Ethan Protocol - AEP-1
 
 **A treasury that governs itself. Rules, not rulers.**
 
 Ethan is a minimal, immutable, trust-minimized protocol on **Base**. It holds a
 USDC treasury and manages it entirely by rules fixed at deployment. There is no
 owner, no upgrade path, no token, no DAO, and no admin key over funds. Anyone
-may *propose* an action; the contracts — not people — decide whether it is
+may *propose* an action; the contracts - not people - decide whether it is
 allowed; after a public timelock, anyone may *execute* it.
 
-- **Live on Base** · contracts verified on BaseScan
-- **No deposits** · this is not a vault (see warning below)
-- **Tested three ways** · mocked unit tests, fuzz + invariant tests, and live
+- **Live on Base** - contracts verified on BaseScan
+- **No deposits** - this is not a vault (see warning below)
+- **Tested three ways** - mocked unit tests, fuzz + invariant tests, and live
   fork tests against real Aave v3
 
 ---
@@ -20,7 +20,7 @@ allowed; after a public timelock, anyone may *execute* it.
 There are no user accounts, no shares, and no way to withdraw funds you send.
 USDC sent to the Router becomes treasury **permanently**, and the only address
 it can ever exit to is the one fixed beneficiary. **Do not send funds expecting
-them back.** You participate by *proposing* and *executing* actions — which is
+them back.** You participate by *proposing* and *executing* actions - which is
 free (a fraction of a cent in gas) and requires no USDC.
 
 ---
@@ -30,19 +30,19 @@ free (a fraction of a cent in gas) and requires no USDC.
 | Contract | Role | Privileged powers |
 | --- | --- | --- |
 | `Constitution.sol` | Immutable rulebook: the one asset, one venue, three actions, caps and timings | None |
-| `ProposalRegistry.sol` | Proposal lifecycle: submit -> timelock -> executable window -> executed / vetoed / expired | Guardian may veto (renounceable); deployer wires the Router once, then is powerless |
-| `Router.sol` | Holds the USDC treasury and executes eligible proposals | None — anyone may trigger execution |
+| `ProposalRegistry.sol` | Proposal lifecycle: submit, timelock, executable window, executed / vetoed / expired | Guardian may veto (renounceable); deployer wires the Router once, then is powerless |
+| `Router.sol` | Holds the USDC treasury and executes eligible proposals | None - anyone may trigger execution |
 
 ## AEP-1 scope
 
 - **Asset:** USDC only
 - **Venue:** Aave v3 Pool on Base (deposits earn lending yield)
-- **Actions:** `1` SUPPLY (USDC -> Aave), `2` WITHDRAW (Aave -> treasury), `3` TRANSFER (treasury -> fixed beneficiary)
+- **Actions:** `1` SUPPLY (USDC to Aave), `2` WITHDRAW (Aave to treasury), `3` TRANSFER (treasury to fixed beneficiary)
 - **Caps:** every execution <= min(2% of treasury, 100 USDC), evaluated at execution time
 - **Timing:** 24h timelock, 48h execution window, 24h cooldown, one live proposal at a time
 
 The `TRANSFER` action is the only way funds leave, and only ever to one immutable
-address — so funds are never permanently locked, but exits are slow, capped, and
+address - so funds are never permanently locked, but exits are slow, capped, and
 public. Changing any rule means deploying a new immutable version.
 
 ## Live deployment (Base mainnet)
@@ -53,9 +53,10 @@ public. Changing any rule means deploying a new immutable version.
 | ProposalRegistry | `0x842259F0Ef3acc932d307Ae477E3cEa779303574` |
 | Router (treasury) | `0xF6FE087817647aB39d11E8F69d71AE94A31FC97F` |
 
-Ethan''s first constitutional action — a 0.20 USDC supply into Aave, submitted at
-the 2% cap — was executed on-chain after surviving its full 24-hour timelock
-(which correctly rejected two early execution attempts first).
+All three are verified on BaseScan. Ethan''s first constitutional action - a 0.20
+USDC supply into Aave, submitted at the 2% cap - was executed on-chain after
+surviving its full 24-hour timelock (which correctly rejected early execution
+attempts first).
 
 ## Security model
 
@@ -63,9 +64,9 @@ The Router is structurally incapable of anything except the three actions above:
 it can only call the one Aave pool and the USDC token, can only approve the pool
 (allowance zeroed after each use), and can only pay the one fixed beneficiary.
 The worst case under a fully malicious proposer is a slow, capped, publicly
-announced drain toward that known address — never to an attacker, never fast,
-never more than min(2% treasury, $100) per 24 hours, with a 24-hour veto window
-on every proposal.
+announced drain toward that known address - never to an attacker, never fast,
+never more than min(2% treasury, 100 USDC) per 24 hours, with a 24-hour veto
+window on every proposal.
 
 No deployed contract is "hack proof." Ethan''s claim is narrower: it is small
 enough to read in one sitting (~330 lines), heavily tested, statically analyzed
@@ -74,6 +75,14 @@ radius of failure is bounded and observable. Its single external dependency is
 Aave v3.
 
 ## Testing
+
+Install forge-std, build, and run the suites:
+
+    forge install foundry-rs/forge-std
+    forge build
+    forge test -vv
+    forge test --match-path "test/fork/*" -vv
+
 The suite covers the proposal lifecycle, caps, timelock, cooldown, veto,
 guardian renounce, reentrancy, and fund-conservation invariants (held across
 tens of thousands of randomized operations). The fork tests run the real
@@ -82,14 +91,23 @@ contracts against the live Aave pool on Base.
 ## Deploy
 
 Fill `.env` from `.env.example` (mainnet addresses are already included), then:
+
+    forge script script/Deploy.s.sol --rpc-url https://mainnet.base.org --account <keystore> --broadcast --verify
+
 A Base Sepolia rehearsal script (`script/DeployTestnet.s.sol`) deploys mocks with
 short timings for testing.
 
 ## Interacting
 
 Submit a proposal to supply 10 USDC (action `1`, amount in 6-decimal units):
+
+    cast send <REGISTRY> "submit(uint8,uint256)" 1 10000000 --rpc-url https://mainnet.base.org --account <keystore>
+
 Execute it after the timelock (anyone can):
-Proposals can be generated by anything — a human, a script, an LLM. The protocol
+
+    cast send <ROUTER> "execute(uint256)" <id> --rpc-url https://mainnet.base.org --account <keystore>
+
+Proposals can be generated by anything - a human, a script, an LLM. The protocol
 neither knows nor cares, because proposers have no power.
 
 ## Links
