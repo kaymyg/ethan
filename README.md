@@ -53,7 +53,7 @@ public. Changing any rule means deploying a new immutable version.
 | ProposalRegistry | `0x842259F0Ef3acc932d307Ae477E3cEa779303574` |
 | Router (treasury) | `0xF6FE087817647aB39d11E8F69d71AE94A31FC97F` |
 
-All three are verified on BaseScan. Ethan''s first constitutional action - a 0.20
+All three are verified on BaseScan. Ethan's first constitutional action - a 0.20
 USDC supply into Aave, submitted at the 2% cap - was executed on-chain after
 surviving its full 24-hour timelock (which correctly rejected early execution
 attempts first).
@@ -68,7 +68,7 @@ announced drain toward that known address - never to an attacker, never fast,
 never more than min(2% treasury, 100 USDC) per 24 hours, with a 24-hour veto
 window on every proposal.
 
-No deployed contract is "hack proof." Ethan''s claim is narrower: it is small
+No deployed contract is "hack proof." Ethan's claim is narrower: it is small
 enough to read in one sitting (~330 lines), heavily tested, statically analyzed
 (Slither clean of high/medium findings), and scoped so tightly that the blast
 radius of failure is bounded and observable. Its single external dependency is
