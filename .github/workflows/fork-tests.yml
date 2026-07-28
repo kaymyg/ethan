@@ -1,0 +1,28 @@
+name: fork tests
+
+# These hit a live Base mainnet RPC, so they are too slow and too flaky to
+# gate every push. Nightly instead, plus a manual trigger.
+on:
+  schedule:
+    - cron: '0 3 * * *'
+  workflow_dispatch:
+
+jobs:
+  fork:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+      - uses: foundry-rs/foundry-toolchain@v1
+      - name: point at a private RPC when one is configured
+        env:
+          BASE_RPC_URL: ${{ secrets.BASE_RPC_URL }}
+        run: |
+          if [ -n "$BASE_RPC_URL" ]; then
+            sed -i "s|^base = .*|base = \"$BASE_RPC_URL\"|" foundry.toml
+            echo "using the configured RPC"
+          else
+            echo "using the public endpoint in foundry.toml (rate limits apply)"
+          fi
+      - run: forge test --match-path 'test/fork/*' -vvv
