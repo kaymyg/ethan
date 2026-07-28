@@ -2,5 +2,4 @@ cache/
 out/
 broadcast/
 .env
-lib/
 *.log
