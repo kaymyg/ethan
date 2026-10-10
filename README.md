@@ -1,5 +1,8 @@
 # Ethan Protocol - AEP-1
 
+[![CI](https://github.com/kaymyg/ethan/actions/workflows/ci.yml/badge.svg)](https://github.com/kaymyg/ethan/actions/workflows/ci.yml)
+[![CodeQL](https://github.com/kaymyg/ethan/actions/workflows/codeql.yml/badge.svg)](https://github.com/kaymyg/ethan/actions/workflows/codeql.yml)
+
 **A treasury that governs itself. Rules, not rulers.**
 
 Ethan is a minimal, immutable, trust-minimized protocol on **Base**. It holds a
